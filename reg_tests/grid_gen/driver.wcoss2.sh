@@ -55,7 +55,7 @@ export APRUN_SFC="mpiexec -n 30 -ppn 30 -cpu-bind core"
 export OMP_STACKSIZE=2048m
 export OMP_NUM_THREADS=30 # orog code uses threads
 export OMP_PLACES=cores
-export HOMEreg=/lfs/h2/emc/global/noscrub/George.Gayno/ufs_utils.git/reg_tests/grid_gen/baseline_data
+export HOMEreg=/lfs/h2/emc/nems/noscrub/emc.nems/UFS_UTILS/reg_tests/grid_gen/baseline_data
 this_dir=$PWD
 
 ulimit -a
@@ -67,16 +67,16 @@ rm -fr $WORK_DIR
 #-----------------------------------------------------------------------------
 
 LOG_FILE1=${LOG_FILE}01
-TEST1=$(qsub -V -o $LOG_FILE1 -e $LOG_FILE1 -q $QUEUE -A $PROJECT_CODE -l walltime=00:10:00 \
+TEST1=$(qsub -V -o $LOG_FILE1 -e $LOG_FILE1 -q $QUEUE -A $PROJECT_CODE -l walltime=00:15:00 \
         -N c96.uniform -l select=1:ncpus=30:mem=40GB $PWD/c96.uniform.sh)
 
 #-----------------------------------------------------------------------------
-# C96 uniform grid using viirs vegetation data.
+# C96 uniform grid using viirs vegetation and bnu soil type data.
 #-----------------------------------------------------------------------------
 
 LOG_FILE2=${LOG_FILE}02
-TEST2=$(qsub -V -o $LOG_FILE2 -e $LOG_FILE2 -q $QUEUE -A $PROJECT_CODE -l walltime=00:10:00 \
-        -N c96.viirs.vegt -l select=1:ncpus=30:mem=40GB $PWD/c96.viirs.vegt.sh)
+TEST2=$(qsub -V -o $LOG_FILE2 -e $LOG_FILE2 -q $QUEUE -A $PROJECT_CODE -l walltime=00:15:00 \
+        -N c96.viirs.bnu -l select=1:ncpus=30:mem=250GB $PWD/c96.viirs.bnu.sh)
 
 #-----------------------------------------------------------------------------
 # gfdl regional grid
@@ -87,7 +87,7 @@ TEST3=$(qsub -V -o $LOG_FILE3 -e $LOG_FILE3 -q $QUEUE -A $PROJECT_CODE -l wallti
         -N gfdl.regional -l select=1:ncpus=30:mem=40GB  $PWD/gfdl.regional.sh)
 
 #-----------------------------------------------------------------------------
-# esg regional grid
+# ESG regional grid (output dominant soil/vegetation type).
 #-----------------------------------------------------------------------------
 
 LOG_FILE4=${LOG_FILE}04
@@ -95,11 +95,20 @@ TEST4=$(qsub -V -o $LOG_FILE4 -e $LOG_FILE4 -q $QUEUE -A $PROJECT_CODE -l wallti
         -N esg.regional -l select=1:ncpus=30:mem=40GB $PWD/esg.regional.sh)
 
 #-----------------------------------------------------------------------------
-# Regional GSL gravity wave drag test.
+# ESG regional grid (output percent of each soil and vegetation type and
+# the dominant category).
 #-----------------------------------------------------------------------------
 
 LOG_FILE5=${LOG_FILE}05
 TEST5=$(qsub -V -o $LOG_FILE5 -e $LOG_FILE5 -q $QUEUE -A $PROJECT_CODE -l walltime=00:07:00 \
+        -N esg.regional.pct.cat -l select=1:ncpus=30:mem=40GB $PWD/esg.regional.pct.cat.sh)
+
+#-----------------------------------------------------------------------------
+# Regional GSL gravity wave drag test.
+#-----------------------------------------------------------------------------
+
+LOG_FILE6=${LOG_FILE}06
+TEST6=$(qsub -V -o $LOG_FILE6 -e $LOG_FILE6 -q $QUEUE -A $PROJECT_CODE -l walltime=00:07:00 \
         -N rsg.gsl.gwd -l select=1:ncpus=30:mem=40GB $PWD/regional.gsl.gwd.sh)
 
 #-----------------------------------------------------------------------------
@@ -107,7 +116,7 @@ TEST5=$(qsub -V -o $LOG_FILE5 -e $LOG_FILE5 -q $QUEUE -A $PROJECT_CODE -l wallti
 #-----------------------------------------------------------------------------
 
 qsub -V -o ${LOG_FILE} -e ${LOG_FILE} -q $QUEUE -A $PROJECT_CODE -l walltime=00:02:00 \
-        -N grid_summary -l select=1:ncpus=1:mem=100MB -W depend=afterok:$TEST1:$TEST2:$TEST3:$TEST4:$TEST5 << EOF
+        -N grid_summary -l select=1:ncpus=1:mem=100MB -W depend=afterok:$TEST1:$TEST2:$TEST3:$TEST4:$TEST5:$TEST6 << EOF
 #!/bin/bash
 cd ${this_dir}
 grep -a '<<<' ${LOG_FILE}* | grep -v echo > $SUM_FILE

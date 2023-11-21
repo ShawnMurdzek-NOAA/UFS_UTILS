@@ -19,7 +19,7 @@ fi
 target=""
 USERNAME=`echo $LOGNAME | awk '{ print tolower($0)'}`
 
-if [[ -d /lfs3 ]] ; then
+if [[ -d /lfs4 ]] ; then
     # We are on NOAA Jet
     if ( ! eval module help > /dev/null 2>&1 ) ; then
         echo load the module command 1>&2
@@ -87,8 +87,6 @@ elif [[ -d /lustre && -d /ncrc ]] ; then
 elif [[ "$(hostname)" =~ "Orion" ]]; then
     target="orion"
     module purge
-elif [[ "$(hostname)" =~ "odin" ]]; then
-    target="odin"
 elif [[ -d /work/00315 && -d /scratch/00315 ]] ; then
     target=stampede
     module purge
@@ -100,7 +98,15 @@ elif [[ -d /data/prod ]] ; then
     fi
     target=s4
     module purge
+elif [[ "$(dnsdomainname)" =~ "pw" ]]; then
+    if [[ "${PW_CSP}" == "aws" ]]; then # TODO: Add other CSPs here.
+	target=noaacloud
+        module purge
+    else
+        echo WARNING: UNSUPPORTED CSP PLATFORM 1>&2; exit 99
+    fi
 else
+
     echo WARNING: UNKNOWN PLATFORM 1>&2
 fi
 

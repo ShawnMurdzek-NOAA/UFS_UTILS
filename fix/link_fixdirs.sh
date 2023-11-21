@@ -1,7 +1,15 @@
 #!/bin/bash
 set -ex
 
-#--Make symbolic links to 'fixed' directories.
+# Set up the 'fixed' directories. 
+# 
+# This script takes two arguments:
+#
+#  $RUN_ENVIR - Either 'emc' (creates links) or
+#               'nco' (copies data).
+#
+#  $machine - is the machine. Choices are:
+#             'wcoss2', 'hera', 'jet', 'orion', 's4'
 
 RUN_ENVIR=${1}
 machine=${2}
@@ -43,22 +51,26 @@ elif [ $machine = "jet" ]; then
 elif [ $machine = "orion" ]; then
     FIX_DIR="/work/noaa/global/glopara/fix"
 elif [ $machine = "wcoss2" ]; then
-    FIX_DIR="/lfs/h2/emc/global/save/emc.global/FIX/fix"
+    FIX_DIR="/lfs/h2/emc/global/noscrub/emc.global/FIX/fix"
 elif [ $machine = "s4" ]; then
     FIX_DIR="/data/prod/glopara/fix"
 fi
 
 am_ver=${am_ver:-20220805}
 orog_ver=${orog_ver:-20220805}
-sfc_climo_ver=${sfc_climo_ver:-20221017}
+sfc_climo_ver=${sfc_climo_ver:-20230925}
 
-for dir in am orog sfc_climo; do
+for dir in am orog orog_raw sfc_climo; do
     if [ -d $dir ]; then
       [[ $RUN_ENVIR = nco ]] && chmod -R 755 $dir
       rm -rf $dir
     fi
-    fix_ver="${dir}_ver"
-    $LINK $FIX_DIR/$dir/${!fix_ver} ${dir}
+    if [ $dir = "orog_raw" ]; then
+      $LINK $FIX_DIR/raw/orog ${dir}
+    else
+      fix_ver="${dir}_ver"
+      $LINK $FIX_DIR/$dir/${!fix_ver} ${dir}
+    fi
 done
 
 exit 0

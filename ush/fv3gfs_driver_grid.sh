@@ -47,9 +47,9 @@ export res=${res:-96}           # resolution of tile: 48, 96, 128, 192, 384, 768
 export gtype=${gtype:-uniform}  # grid type: uniform, stretch, nest, regional_gfdl,
                                 # or regional_esg
 
-export add_lake=${add_lake:-false}      # add lake fraction and depth.  uniform only.
-export lake_cutoff=${lake_cutoff:-0.20} # lake fractions less than lake_cutoff 
-                                        # are ignored.
+export add_lake=${add_lake:-false}      # add lake fraction and depth. uniform only.
+export lake_cutoff=${lake_cutoff:-0.50} # return 0 if lake_frac <  lake_cutoff & add_lake=T
+export binary_lake=${binary_lake:-1}    # return 1 if lake_frac >= lake_cutoff & add_lake=T
 
 export make_gsl_orog=${make_gsl_orog:-false} # when true, create GSL drag suite orog files.
 
@@ -102,7 +102,7 @@ export out_dir=${out_dir:?}
 export home_dir=${home_dir:-"$PWD/../"}
 export script_dir=$home_dir/ush
 export exec_dir=${exec_dir:-"$home_dir/exec"}
-export topo=$home_dir/fix/orog
+export topo=$home_dir/fix/orog_raw
 
 export NCDUMP=${NCDUMP:-ncdump}
 
